@@ -1,60 +1,58 @@
 package com.example.chatsapp.Fragments
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.chatsapp.R
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.chatsapp.Adapters.UsersAdapter
+import com.example.chatsapp.Models.Users
+import com.example.chatsapp.databinding.FragmentStatusBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [StatusFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class StatusFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var binding: FragmentStatusBinding
+    private lateinit var list: ArrayList<Users>
+    private lateinit var database: FirebaseDatabase
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_status, container, false)
-    }
+        binding = FragmentStatusBinding.inflate(inflater, container, false)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment StatusFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            StatusFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        list = arrayListOf<Users>()
+        database = FirebaseDatabase.getInstance()
+        val adapter = UsersAdapter(list, context)
+        binding.statusRecyclerView.adapter = adapter
+
+        val layoutManager = LinearLayoutManager(context)
+        binding.statusRecyclerView.layoutManager = layoutManager
+
+        database.reference.child("Users").addValueEventListener(object : ValueEventListener {
+
+            @SuppressLint("NotifyDataSetChanged")
+            override fun onDataChange(snapshot: DataSnapshot) {
+                list.clear()
+                // Lấy dữ liệu mới nhất từ Firebase Realtime Database để xử lý
+                for (dataSnapshot in snapshot.children) {
+                    val users: Users? = dataSnapshot.getValue(Users::class.java)
+                    users!!.userID = dataSnapshot.key!!
+                    list.add(users)
                 }
+                adapter.notifyDataSetChanged()
             }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("Error", "Failed to read value.", databaseError.toException())
+            }
+        })
+        return binding.root
     }
 }

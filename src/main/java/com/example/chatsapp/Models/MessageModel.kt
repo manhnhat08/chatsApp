@@ -19,4 +19,9 @@ class MessageModel {
         this.uId = uId
         this.message = message
     }
+    constructor(uId: String, message: String, timestamp: Long){
+        this.uId = uId
+        this.message = message
+        this.timestamp = timestamp
+    }
 }

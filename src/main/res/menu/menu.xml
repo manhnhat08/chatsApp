@@ -10,6 +10,10 @@
         android:id="@+id/group_chat"
         android:title="Group Chat"
         />
+    <item
+        android:id="@+id/chat_GPT"
+        android:title="ChatGPT"
+        />
 
     <item
         android:id="@+id/logout"

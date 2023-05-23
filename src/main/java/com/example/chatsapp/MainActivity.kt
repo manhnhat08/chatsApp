@@ -52,8 +52,11 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this, SignInActivity::class.java)
                 startActivity(intent)
             }
+            R.id.chat_GPT ->{
+//                ----------------------------------------
+            }
             R.id.group_chat ->{
-                val intent = Intent(this, GroupChatActivity::class.java)
+                val intent = Intent(this, JoinRoomActivity::class.java)
                 startActivity(intent)
             }
         }

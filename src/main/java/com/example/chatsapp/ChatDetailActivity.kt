@@ -2,9 +2,13 @@ package com.example.chatsapp
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.chatsapp.Adapters.ChatAdapter
 import com.example.chatsapp.Models.MessageModel
@@ -14,18 +18,24 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.squareup.picasso.Picasso
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
+import java.util.Objects
 
 class ChatDetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityChatDetailBinding
     private lateinit var database: FirebaseDatabase
     private lateinit var auth: FirebaseAuth
+    private lateinit var imagePickerActivityResult: ActivityResultLauncher<Intent>
+    private lateinit var storage: FirebaseStorage
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatDetailBinding.inflate(layoutInflater)
@@ -33,6 +43,7 @@ class ChatDetailActivity : AppCompatActivity() {
         supportActionBar!!.hide()
         database = FirebaseDatabase.getInstance()
         auth = FirebaseAuth.getInstance()
+        storage = FirebaseStorage.getInstance()
 
         val senderID = auth.uid
         val recieveID = intent.getStringExtra("userID")
@@ -77,37 +88,66 @@ class ChatDetailActivity : AppCompatActivity() {
         })
 
 
+        binding.ivFileImg.setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.action = Intent.ACTION_GET_CONTENT
+            intent.type = "image/*"
+            startActivityForResult(intent, 33, null)
+            imagePickerActivityResult.launch(intent)
+        }
 
 
 
         binding.send.setOnClickListener {
-
-            val currentTime = LocalTime.now()
-            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-            val formattedTime = currentTime.format(formatter)
-            Log.d("TAG11", formattedTime)
-//            LocalDateTime.now().atZone(ZoneId.of("GMT+7")).toEpochSecond()
+            val date = Date()
             val message: String = binding.etMessage.text.toString()
-            val model: MessageModel = MessageModel(senderID!!, message)
-            model.timestamp = Date().time
-            binding.etMessage.setText("")
-//            Log.d("TAG", Date().time.toString())
-//            val currentTimeMillis = System.currentTimeMillis()
-//            val currentDate = Date(currentTimeMillis)
-//            Log.d("TAG1", currentDate.toString())
+            val model = MessageModel(senderID!!, message)
 
+                binding.etMessage.setText("")
+                database.reference.child("chats").child(senderRoom).push().setValue(model)
+                    .addOnSuccessListener {
+                        database.reference.child("chats").child(receiverRoom).push().setValue(model)
+                            .addOnSuccessListener {
+                            }
+                    }
 
-            database.reference.child("chats").child(senderRoom).push().setValue(model)
-                .addOnSuccessListener {
-                    database.reference.child("chats").child(receiverRoom).push().setValue(model)
-                        .addOnSuccessListener {
-
-                        }
-                }
-
-
+//            val lastMsgObj = HashMap<String, Any>()
+//            lastMsgObj.put("lastMsg", model.message)
+//            lastMsgObj["lastMsgTime"] = date.time
+//            database.reference.child("chats").child(senderRoom).updateChildren(lastMsgObj)
+//            database.reference.child("chats").child(receiverRoom).updateChildren(lastMsgObj)
 
         }
+        imagePickerActivityResult =
+
+            registerForActivityResult( ActivityResultContracts.StartActivityForResult()) { result ->
+
+                if (result != null) {
+                    // getting URI of selected Image
+                    val sFile: Uri? = result.data?.data
+                    binding.profileImage.setImageURI(sFile)
+                    val reference: StorageReference = storage.reference.child("send_image_msg")
+                        .child(FirebaseAuth.getInstance().uid!!)
+
+                    if (sFile != null) {
+                        reference.putFile(sFile).addOnSuccessListener {
+                            reference.downloadUrl.addOnSuccessListener { uri ->
+                                val message: String = uri.toString()
+                                val model = MessageModel(senderID!!, message)
+//                                database.reference.child("chats").child(FirebaseAuth.getInstance().uid!!).child("send_image_msg").setValue(model)
+                                database.reference.child("chats").child(senderRoom).push().setValue(model)
+                                    .addOnSuccessListener {
+                                        database.reference.child("chats").child(receiverRoom).push().setValue(model)
+                                            .addOnSuccessListener {
+                                            }
+                                    }
+                                Toast.makeText(this, "Send picture Uploaded", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+
+                }
+            }
 
 
     }

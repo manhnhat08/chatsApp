@@ -2,16 +2,17 @@ package com.example.chatsapp.Adapters
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.chatsapp.Models.MessageModel
 import com.example.chatsapp.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.squareup.picasso.Picasso
 
 class ChatAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -81,22 +82,41 @@ class ChatAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (holder.javaClass == SenderViewHolder::class.java){
 //            Ép kiểu đổi holder thành senderViewHolder
             (holder as SenderViewHolder).senderMsg.text = messageModel.message
+            val imageUrl = messageModel.message as? String
+            if (imageUrl!!.startsWith("http")){
+                (holder as SenderViewHolder).senderMsg.visibility = View.GONE
+            }
+            Picasso.get()
+                .load(imageUrl)
+                .into((holder as SenderViewHolder).senderImg)
+//            (holder).senderImg.layoutParams.width = 500
+//            (holder).senderImg.layoutParams.height = 700
         }
-        else {
+        if (holder.javaClass == ReceiverViewHolder::class.java) {
             (holder as ReceiverViewHolder).receiverMsg.text = messageModel.message
+            val imageUrl = messageModel.message as? String
+            if (imageUrl!!.startsWith("http")){
+                (holder).receiverMsg.visibility = View.GONE
+            }
+            Picasso.get()
+                .load(imageUrl)
+                .into((holder).receiverImg)
+//            (holder).receiverImg.layoutParams.width = 500
+//            (holder).receiverImg.layoutParams.height = 700
+
         }
     }
+
 
     class ReceiverViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val receiverMsg: TextView = itemView.findViewById(R.id.tvReceiverText)
+        val receiverImg: ImageView = itemView.findViewById(R.id.msg_receive_img)
         val receiverTime: TextView = itemView.findViewById(R.id.tvReceiverTime)
-
     }
 
-    public class SenderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
+    class SenderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val senderMsg: TextView = itemView.findViewById(R.id.tvSenderText)
+        val senderImg: ImageView = itemView.findViewById(R.id.msg_sender_img)
         val senderTime: TextView = itemView.findViewById(R.id.tvSenderTime)
-
     }
 }

@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="1dp"
-    app:cardCornerRadius="1dp">
+    app:cardCornerRadius="1dp"
+    tools:ignore="MissingDefaultResource">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,20 +22,11 @@
             app:civ_border_color="#FFF"
             app:civ_border_width="2dp" />
 
-        <ImageView
-            android:id="@+id/IvStatus"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_marginLeft="-25dp"
-            android:layout_marginTop="55dp"
-            android:src="@drawable/status" />
-
         <LinearLayout
-            android:layout_width="400dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
-            android:layout_marginLeft="15dp"
             android:orientation="vertical">
 
             <TextView
@@ -46,13 +39,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/lastMessage"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:text="Last message" />
+
 
         </LinearLayout>
 
